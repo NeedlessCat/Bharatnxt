@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BharatNXT: Vendor Onboarding & Verification Portal</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Custom Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Custom animation for pending spinner */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin 2s linear infinite;
+        }
+
+        /* Custom styling for file input */
+        .file-input-label {
+            transition: all 0.2s ease-in-out;
+        }
+        .file-input-label:hover {
+            background-color: #eef2ff; /* indigo-50 */
+            border-color: #6366f1; /* indigo-500 */
+        }
+        
+        /* Progress bar transition */
+        .progress-bar-inner {
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Modal transition */
+        .modal {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .modal-hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+        .modal-visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 md:p-8 min-h-screen flex flex-col">
+
+        <!-- Header -->
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-600">BharatNXT</h1>
+            <p class="text-slate-500 mt-2 text-lg">Vendor Onboarding & Verification Portal</p>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-8 flex-grow">
+            
+            <!-- Left Column: Onboarding Form -->
+            <div class="lg:col-span-2 bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-200">
+                <h2 class="text-2xl font-bold mb-6">Onboard New Vendor</h2>
+                <form id="vendor-form" class="space-y-5">
+                    <div>
+                        <label for="vendorName" class="block text-sm font-medium text-slate-700 mb-1">Vendor Name</label>
+                        <input type="text" id="vendorName" name="vendorName" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="e.g., Acme Innovations Pvt. Ltd.">
+                    </div>
+                    <div>
+                        <label for="gstin" class="block text-sm font-medium text-slate-700 mb-1">GSTIN <span class="text-red-500">*</span></label>
+                        <input type="text" id="gstin" name="gstin" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="22AAAAA0000A1Z5" pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$">
+                        <p class="text-xs text-slate-400 mt-1">Must be a valid 15-digit GSTIN.</p>
+                    </div>
+
+                    <!-- Optional Fields Accordion -->
+                    <details class="group">
+                        <summary class="list-none flex items-center justify-between cursor-pointer text-sm font-medium text-slate-600">
+                            <span>Show Optional Fields</span>
+                            <i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="mt-4 space-y-5 border-t pt-4">
+                             <div>
+                                <label for="pan" class="block text-sm font-medium text-slate-700 mb-1">PAN</label>
+                                <input type="text" id="pan" name="pan" class="w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="ABCDE1234F">
+                            </div>
+                            <div>
+                                <label for="website" class="block text-sm font-medium text-slate-700 mb-1">Website</label>
+                                <input type="url" id="website" name="website" class="w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="https://example.com">
+                            </div>
+                             <div>
+                                <label for="pan-upload" class="block text-sm font-medium text-slate-700 mb-1">Upload Documents</label>
+                                <label for="doc-upload" class="file-input-label w-full flex items-center justify-center px-4 py-3 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer">
+                                    <div class="text-center">
+                                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400"></i>
+                                        <p class="text-sm text-slate-500 mt-1">PAN, Udyam, Trade License</p>
+                                    </div>
+                                    <input type="file" id="doc-upload" class="hidden" multiple>
+                                </label>
+                            </div>
+                        </div>
+                    </details>
+                    
+                    <!-- Premium Feature Toggle -->
+                    <div class="relative flex items-start pt-4 border-t">
+                        <div class="flex h-6 items-center">
+                            <input id="premium-check" name="premium-check" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600">
+                        </div>
+                        <div class="ml-3 text-sm leading-6">
+                            <label for="premium-check" class="font-bold text-indigo-700">Premium: Director Due Diligence</label>
+                            <p class="text-slate-500">Check director history via MCA & other trusted sources.</p>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-4">
+                        <button type="submit" id="verify-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 flex items-center justify-center disabled:bg-slate-400">
+                            <span id="btn-text">Verify Vendor</span>
+                            <i id="btn-spinner" class="fa-solid fa-spinner animate-spin ml-2 hidden"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Column: Verification Results -->
+            <div id="results-container" class="lg:col-span-3 bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-200 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">Verification Status</h2>
+                    <div id="final-score" class="text-right hidden">
+                        <span class="text-3xl font-extrabold text-indigo-600">0/100</span>
+                        <p class="text-sm font-medium text-slate-500">Trust Score</p>
+                    </div>
+                </div>
+                
+                <!-- Overall Progress Bar -->
+                <div class="w-full bg-slate-200 rounded-full h-2.5 mb-8">
+                    <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full progress-bar-inner" style="width: 0%"></div>
+                </div>
+                
+                <!-- Verification Steps -->
+                <div id="verification-steps" class="space-y-4">
+                    <!-- Dynamic content will be injected here by JS -->
+                </div>
+
+                <!-- Summary Report Button -->
+                <div class="text-center mt-8">
+                    <button id="report-btn" class="hidden bg-emerald-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-emerald-600 transition-all duration-300 transform hover:scale-105">
+                        <i class="fa-solid fa-file-arrow-down mr-2"></i> View Summary Report
+                    </button>
+                </div>
+            </div>
+             <!-- Placeholder for when results are not yet shown -->
+            <div id="results-placeholder" class="lg:col-span-3 flex items-center justify-center bg-white/50 border-2 border-dashed border-slate-300 rounded-2xl p-8">
+                <div class="text-center">
+                    <i class="fa-solid fa-magnifying-glass-chart text-5xl text-slate-400"></i>
+                    <p class="mt-4 text-lg font-medium text-slate-500">Verification results will appear here.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Report Modal -->
+    <div id="report-modal" class="modal modal-hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 relative">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition">
+                <i class="fa-solid fa-xmark fa-2x"></i>
+            </button>
+
+            <div id="report-content">
+                <!-- Report content will be injected here by JS -->
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM Element References ---
+        const vendorForm = document.getElementById('vendor-form');
+        const verifyBtn = document.getElementById('verify-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnSpinner = document.getElementById('btn-spinner');
+        
+        const resultsContainer = document.getElementById('results-container');
+        const resultsPlaceholder = document.getElementById('results-placeholder');
+        const progressBar = document.getElementById('progress-bar');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const verificationStepsContainer = document.getElementById('verification-steps');
+        const reportBtn = document.getElementById('report-btn');
+
+        const reportModal = document.getElementById('report-modal');
+        const reportContent = document.getElementById('report-content');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        
+        // --- State Management ---
+        let verificationInProgress = false;
+        let totalChecks = 0;
+        let checksCompleted = 0;
+        let currentScore = 0;
+        let maxScore = 0;
+        let reportData = {};
+
+        // --- Event Listeners ---
+        vendorForm.addEventListener('submit', handleFormSubmit);
+        reportBtn.addEventListener('click', showReportModal);
+        closeModalBtn.addEventListener('click', hideReportModal);
+        reportModal.addEventListener('click', (e) => {
+            if (e.target === reportModal) {
+                hideReportModal();
+            }
+        });
+
+        // --- Core Functions ---
+        
+        /**
+         * Handles the main form submission to start verification.
+         */
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            if (verificationInProgress) return;
+
+            // 1. Reset UI and state
+            resetStateAndUI();
+            const formData = new FormData(vendorForm);
+            const isPremium = formData.get('premium-check') === 'on';
+            const vendorName = formData.get('vendorName');
+            const gstin = formData.get('gstin');
+
+            // 2. Setup verification checks
+            const checks = [
+                { id: 'gstin', title: 'GSTIN Validation', points: 25, func: verifyGSTIN, args: [gstin] },
+                { id: 'filing', title: 'GST Return Filing Status', points: 20, func: checkGstFiling },
+                { id: 'reputation', title: 'Online Reputation Check', points: 20, func: checkReputation, args: [vendorName] },
+                { id: 'compliance', title: 'Compliance Rating', points: 20, func: checkCompliance },
+                { id: 'docs', title: 'Document Verification', points: 15, func: checkDocuments },
+            ];
+
+            if (isPremium) {
+                checks.push({ id: 'director', title: 'Director Due Diligence', points: 25, func: checkDirectors });
+            }
+
+            totalChecks = checks.length;
+            maxScore = checks.reduce((sum, check) => sum + check.points, 0);
+
+            // 3. Render initial pending cards
+            verificationStepsContainer.innerHTML = checks.map(check => 
+                createVerificationCard(check.id, check.title)
+            ).join('');
+            
+            // 4. Start the verification process
+            await runVerificationSequence(checks);
+        }
+        
+        /**
+         * Runs the verification checks sequentially with simulated delays.
+         * @param {Array} checks - The array of verification checks to run.
+         */
+        async function runVerificationSequence(checks) {
+            verificationInProgress = true;
+            for (const check of checks) {
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+                
+                // Execute the check function
+                const result = await check.func(...(check.args || []));
+                
+                // Update UI based on result
+                checksCompleted++;
+                currentScore += result.score;
+                updateCardUI(check.id, result.status, result.message, result.details);
+                updateOverallProgress();
+                
+                // Store data for the report
+                reportData[check.id] = { title: check.title, ...result };
+            }
+            
+            // Finalize the process
+            finalizeVerification();
+        }
+
+        /**
+         * Resets the application state and UI for a new verification.
+         */
+        function resetStateAndUI() {
+            verificationInProgress = true;
+            checksCompleted = 0;
+            currentScore = 0;
+            maxScore = 0;
+            reportData = {};
+
+            verifyBtn.disabled = true;
+            btnText.textContent = 'Verifying...';
+            btnSpinner.classList.remove('hidden');
+
+            resultsPlaceholder.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            verificationStepsContainer.innerHTML = '';
+            
+            progressBar.style.width = '0%';
+            finalScoreDisplay.classList.add('hidden');
+            reportBtn.classList.add('hidden');
+        }
+
+        /**
+         * Finalizes the UI after all checks are complete.
+         */
+        function finalizeVerification() {
+            verificationInProgress = false;
+            verifyBtn.disabled = false;
+            btnText.textContent = 'Verify Vendor';
+            btnSpinner.classList.add('hidden');
+            
+            finalScoreDisplay.querySelector('span').textContent = ${Math.round((currentScore / maxScore) * 100)}/100;
+            finalScoreDisplay.classList.remove('hidden');
+            
+            reportBtn.classList.remove('hidden');
+        }
+        
+        /**
+         * Updates the overall progress bar and score.
+         */
+        function updateOverallProgress() {
+            const progressPercentage = (checksCompleted / totalChecks) * 100;
+            progressBar.style.width = ${progressPercentage}%;
+        }
+        
+        // --- UI Creation and Updates ---
+
+        /**
+         * Creates the initial HTML for a verification card.
+         * @param {string} id - The unique ID for the card.
+         * @param {string} title - The title of the verification step.
+         * @returns {string} HTML string for the card.
+         */
+        function createVerificationCard(id, title) {
+            let premiumBadge = '';
+            if (id === 'director') {
+                premiumBadge = <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Premium</span>;
+            }
+            return `
+                <div id="card-${id}" class="bg-slate-50 p-4 rounded-lg flex items-center justify-between transition-all duration-300 border-l-4 border-slate-300">
+                    <div class="flex items-center">
+                        <div id="icon-${id}" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 mr-4">
+                           <i class="fa-solid fa-spinner animate-spin-slow"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-800">${title} ${premiumBadge}</p>
+                            <p id="message-${id}" class="text-sm text-slate-500">Pending...</p>
+                        </div>
+                    </div>
+                    <div id="details-${id}" class="text-right"></div>
+                </div>
+            `;
+        }
+        
+        /**
+         * Updates a verification card's UI based on the result.
+         * @param {string} id - The ID of the card to update.
+         * @param {string} status - 'verified', 'warning', or 'error'.
+         * @param {string} message - The main message to display.
+         * @param {string} details - Additional details for the right side.
+         */
+        function updateCardUI(id, status, message, details = '') {
+            const card = document.getElementById(card-${id});
+            const iconContainer = document.getElementById(icon-${id});
+            const messageEl = document.getElementById(message-${id});
+            const detailsEl = document.getElementById(details-${id});
+
+            const statusStyles = {
+                verified: {
+                    icon: 'fa-check',
+                    bgColor: 'bg-emerald-100',
+                    textColor: 'text-emerald-600',
+                    borderColor: 'border-emerald-500'
+                },
+                warning: {
+                    icon: 'fa-triangle-exclamation',
+                    bgColor: 'bg-amber-100',
+                    textColor: 'text-amber-600',
+                    borderColor: 'border-amber-500'
+                },
+                error: {
+                    icon: 'fa-xmark',
+                    bgColor: 'bg-red-100',
+                    textColor: 'text-red-600',
+                    borderColor: 'border-red-500'
+                }
+            };
+
+            const styles = statusStyles[status];
+            card.className = card.className.replace(/border-slate-300/, styles.borderColor);
+            iconContainer.className = w-10 h-10 flex items-center justify-center rounded-full mr-4 ${styles.bgColor} ${styles.textColor};
+            iconContainer.innerHTML = <i class="fa-solid ${styles.icon}"></i>;
+            messageEl.textContent = message;
+            detailsEl.innerHTML = details;
+        }
+
+        // --- Report Modal Functions ---
+        
+        function showReportModal() {
+            populateReportContent();
+            reportModal.classList.remove('modal-hidden');
+            reportModal.classList.add('modal-visible');
+        }
+
+        function hideReportModal() {
+            reportModal.classList.add('modal-hidden');
+            reportModal.classList.remove('modal-visible');
+        }
+
+        function populateReportContent() {
+            const finalScore = Math.round((currentScore / maxScore) * 100);
+            let scoreColor;
+            if (finalScore >= 80) scoreColor = 'text-emerald-600';
+            else if (finalScore >= 50) scoreColor = 'text-amber-600';
+            else scoreColor = 'text-red-600';
+
+            const vendorName = document.getElementById('vendorName').value;
+            const gstin = document.getElementById('gstin').value;
+            
+            let reportHTML = `
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-extrabold text-slate-800">Verification Summary Report</h2>
+                    <p class="text-slate-500 mt-1">For: ${vendorName || 'N/A'}</p>
+                </div>
+                
+                <div class="flex flex-col md:flex-row items-center justify-around bg-slate-50 p-6 rounded-xl mb-8">
+                    <div class="text-center mb-4 md:mb-0">
+                        <p class="text-lg font-medium text-slate-600">Final Trust Score</p>
+                        <p class="text-6xl font-extrabold ${scoreColor}">${finalScore}<span class="text-3xl text-slate-400">/100</span></p>
+                    </div>
+                    <div class="text-left">
+                        <p><span class="font-semibold">GSTIN:</span> ${gstin}</p>
+                        <p><span class="font-semibold">Report Date:</span> ${new Date().toLocaleDateString()}</p>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-bold mb-4">Check Breakdown</h3>
+                <div class="space-y-4">
+            `;
+            
+            for (const key in reportData) {
+                const item = reportData[key];
+                const statusColors = {
+                    verified: { icon: 'fa-check-circle', color: 'text-emerald-500' },
+                    warning: { icon: 'fa-exclamation-triangle', color: 'text-amber-500' },
+                    error: { icon: 'fa-times-circle', color: 'text-red-500' }
+                };
+                const statusInfo = statusColors[item.status];
+                
+                reportHTML += `
+                    <div class="p-4 border rounded-lg">
+                        <div class="flex justify-between items-start">
+                           <div>
+                                <h4 class="font-semibold text-lg flex items-center"><i class="fa-solid ${statusInfo.icon} ${statusInfo.color} mr-3"></i>${item.title}</h4>
+                                <p class="text-slate-600 ml-7">${item.message}</p>
+                           </div>
+                            <div class="text-sm text-right text-slate-500 pl-4">${item.details || ''}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            reportHTML += </div>;
+            reportContent.innerHTML = reportHTML;
+        }
+
+        
+        // --- Simulated Verification Functions ---
+        // These functions mimic API calls and return results.
+        
+        async function verifyGSTIN(gstin) {
+            // Regex check is already in the HTML pattern, but we can double check
+            const isValidFormat = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstin);
+            if (!isValidFormat) {
+                return { status: 'error', message: 'Invalid GSTIN Format', score: 0, details: '15-digit format required' };
+            }
+            // Simulate API check
+            if (gstin.startsWith('99')) { // test case for failure
+                 return { status: 'error', message: 'GSTIN not found or inactive', score: 0, details: '<span class="font-bold text-red-500">Not Found</span>' };
+            }
+            return {
+                status: 'verified',
+                message: 'GSTIN is active and valid.',
+                score: 25,
+                details: '<strong class="text-emerald-600">Active</strong>'
+            };
+        }
+
+        async function checkGstFiling() {
+            const monthsFiled = Math.floor(Math.random() * 3) + 4; // 4, 5, or 6
+            if (monthsFiled === 6) {
+                return {
+                    status: 'verified',
+                    message: 'All GST returns filed on time for the last 6 months.',
+                    score: 20,
+                    details: <strong class="text-emerald-600">${monthsFiled}/6 Months</strong>
+                };
+            }
+            return {
+                status: 'warning',
+                message: 'Inconsistent GST return filing history found.',
+                score: 10,
+                details: <strong class="text-amber-600">${monthsFiled}/6 Months</strong>
+            };
+        }
+
+        async function checkReputation(vendorName) {
+            const random = Math.random();
+            if (random > 0.8) {
+                return { status: 'warning', message: 'Mixed reviews found online.', score: 10, details: 'Check Google/LinkedIn' };
+            } else if (random < 0.1) {
+                return { status: 'error', message: 'Significant negative press found.', score: 0, details: 'High Risk' };
+            }
+            return { status: 'verified', message: 'No major negative reputation issues found.', score: 20, details: 'Positive Sentiment' };
+        }
+        
+        async function checkCompliance() {
+             return { status: 'verified', message: 'No compliance issues detected.', score: 20, details: 'Clear Record' };
+        }
+        
+        async function checkDocuments() {
+             return { status: 'verified', message: 'Submitted documents appear valid.', score: 15, details: 'Format OK' };
+        }
+
+        async function checkDirectors() {
+            const random = Math.random();
+            if (random > 0.85) {
+                return {
+                    status: 'warning',
+                    message: 'One director associated with a non-compliant firm.',
+                    score: 10,
+                    details: '1 Linked Issue'
+                };
+            }
+            return {
+                status: 'verified',
+                message: 'Directors have a clean compliance history.',
+                score: 25,
+                details: '<strong class="text-emerald-600">Clean History</strong>'
+            };
+        }
+
+    });
+    </script>
+</body>
+</html>
